@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get stock
     const stock = await db.stock.findUnique({
       where: { id: stockId },
     });
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Stock not found" }, { status: 404 });
     }
 
-    // Get user
     const user = await db.user.findUnique({
       where: { id: userId },
     });
@@ -53,7 +51,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if user has enough shares
     const portfolio = await db.portfolio.findUnique({
       where: {
         userId_stockId: {
@@ -72,15 +69,12 @@ export async function POST(request: NextRequest) {
 
     const totalValue = stock.price * quantity;
 
-    // Perform transaction in a transaction
     const result = await db.$transaction(async (tx) => {
-      // Add balance
       await tx.user.update({
         where: { id: user.id },
         data: { balance: user.balance + totalValue },
       });
 
-      // Create transaction record
       const transaction = await tx.transaction.create({
         data: {
           userId: user.id,
@@ -92,11 +86,9 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Update portfolio
       const newQuantity = portfolio.quantity - quantity;
 
       if (newQuantity === 0) {
-        // Remove portfolio entry if no shares left
         await tx.portfolio.delete({
           where: {
             userId_stockId: {

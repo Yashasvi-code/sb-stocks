@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = (session.user as SessionUser).id;
+
     const watchlist = await db.watchlist.findMany({
       where: { userId },
       include: {
@@ -66,7 +67,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if stock exists
     const stock = await db.stock.findUnique({
       where: { id: stockId },
     });
@@ -75,7 +75,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Stock not found" }, { status: 404 });
     }
 
-    // Check if already in watchlist
     const existing = await db.watchlist.findUnique({
       where: {
         userId_stockId: {

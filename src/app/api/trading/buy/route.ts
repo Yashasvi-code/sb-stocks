@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get stock
     const stock = await db.stock.findUnique({
       where: { id: stockId },
     });
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Stock not found" }, { status: 404 });
     }
 
-    // Get user
     const user = await db.user.findUnique({
       where: { id: userId },
     });
@@ -55,7 +53,6 @@ export async function POST(request: NextRequest) {
 
     const totalCost = stock.price * quantity;
 
-    // Check if user has enough balance
     if (user.balance < totalCost) {
       return NextResponse.json(
         { error: `Insufficient funds. Required: $${totalCost.toFixed(2)}, Available: $${user.balance.toFixed(2)}` },
@@ -63,15 +60,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Perform transaction in a transaction
     const result = await db.$transaction(async (tx) => {
-      // Deduct balance
       await tx.user.update({
         where: { id: user.id },
         data: { balance: user.balance - totalCost },
       });
 
-      // Create transaction record
       const transaction = await tx.transaction.create({
         data: {
           userId: user.id,
@@ -83,7 +77,6 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Update or create portfolio entry
       const existingPortfolio = await tx.portfolio.findUnique({
         where: {
           userId_stockId: {
@@ -94,7 +87,6 @@ export async function POST(request: NextRequest) {
       });
 
       if (existingPortfolio) {
-        // Calculate new average price
         const totalQuantity = existingPortfolio.quantity + quantity;
         const newAveragePrice =
           (existingPortfolio.averagePrice * existingPortfolio.quantity + totalCost) /

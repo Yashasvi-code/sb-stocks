@@ -3,6 +3,29 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
+declare module "next-auth" {
+  interface User {
+    id: string;
+    role: string;
+    balance: number;
+  }
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+      balance: number;
+    } & Session["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    role: string;
+    balance: number;
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
