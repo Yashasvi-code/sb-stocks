@@ -52,11 +52,27 @@ import {
   Settings,
 } from "lucide-react";
 
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+  balance?: number;
+}
+
+// get user data from session
+const getSessionUser = (session: { user?: unknown } | null): SessionUser | null => {
+  if (!session?.user) return null;
+  return session.user as SessionUser;
+};
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get("tab") || "dashboard";
   const router = useRouter();
+  const user = getSessionUser(session);
 
   // State
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -299,7 +315,7 @@ if (status === "loading") {
         <div className="mb-8">
           <PortfolioStats
             portfolio={portfolio}
-            balance={session.user.balance || 0}
+            balance={user?.balance || 0}
           />
         </div>
 
@@ -322,7 +338,7 @@ if (status === "loading") {
               <History className="h-4 w-4" />
               <span className="hidden sm:inline">History</span>
             </TabsTrigger>
-            {session.user.role === "admin" && (
+            {user?.role === "admin" && (
               <TabsTrigger value="admin" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline">Admin</span>
@@ -621,7 +637,7 @@ if (status === "loading") {
           </TabsContent>
 
           {/* Admin Tab */}
-          {session.user.role === "admin" && (
+          {user?.role === "admin" && (
             <TabsContent value="admin" className="space-y-6">
               <div className="flex justify-between items-center">
                 <div>
@@ -672,7 +688,7 @@ if (status === "loading") {
             setSelectedStock(null);
           }}
           onSuccess={handleTradeSuccess}
-          userBalance={session.user.balance || 0}
+          userBalance={user?.balance || 0}
           ownedQuantity={getOwnedQuantity(selectedStock.id)}
         />
       )}

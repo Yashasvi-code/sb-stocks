@@ -3,27 +3,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-declare module "next-auth" {
-  interface User {
-    id: string;
-    role: string;
-    balance: number;
-  }
-  interface Session {
-    user: {
-      id: string;
-      role: string;
-      balance: number;
-    } & Session["user"];
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    role: string;
-    balance: number;
-  }
+// Custom user type for our application
+interface AppUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  balance: number;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -62,24 +48,25 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           balance: user.balance,
-        };
+        } as AppUser;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.balance = user.balance;
+        const appUser = user as AppUser;
+        token.id = appUser.id;
+        token.role = appUser.role;
+        token.balance = appUser.balance;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.balance = token.balance as number;
+        (session.user as AppUser).id = token.id as string;
+        (session.user as AppUser).role = token.role as string;
+        (session.user as AppUser).balance = token.balance as number;
       }
       return session;
     },

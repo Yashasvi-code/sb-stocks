@@ -3,6 +3,15 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+  balance?: number;
+}
+
 // GET - Fetch all stocks
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "admin") {
+    if (!session || !session.user || (session.user as SessionUser).role !== "admin") {
       return NextResponse.json(
         { error: "Unauthorized - Admin access required" },
         { status: 403 }
