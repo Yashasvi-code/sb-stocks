@@ -3,6 +3,15 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+  balance?: number;
+}
+
 // POST - Buy stock
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userId = (session.user as SessionUser).id;
     const body = await request.json();
     const { stockId, quantity } = body;
 
@@ -36,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Get user
     const user = await db.user.findUnique({
-      where: { id: (session.user as { id: string }).id },
+      where: { id: userId },
     });
 
     if (!user) {

@@ -3,6 +3,15 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+  balance?: number;
+}
+
 // GET - Fetch user's watchlist
 export async function GET(request: NextRequest) {
   try {
@@ -15,8 +24,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userId = (session.user as SessionUser).id;
     const watchlist = await db.watchlist.findMany({
-      where: { userId: (session.user as { id: string }).id },
+      where: { userId },
       include: {
         stock: true,
       },
@@ -45,6 +55,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userId = (session.user as SessionUser).id;
     const body = await request.json();
     const { stockId } = body;
 
@@ -68,7 +79,7 @@ export async function POST(request: NextRequest) {
     const existing = await db.watchlist.findUnique({
       where: {
         userId_stockId: {
-          userId: (session.user as { id: string }).id,
+          userId,
           stockId,
         },
       },
@@ -83,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     const watchlistEntry = await db.watchlist.create({
       data: {
-        userId: (session.user as { id: string }).id,
+        userId,
         stockId,
       },
       include: { stock: true },
@@ -114,6 +125,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const userId = (session.user as SessionUser).id;
     const { searchParams } = new URL(request.url);
     const stockId = searchParams.get("stockId");
 
@@ -127,7 +139,7 @@ export async function DELETE(request: NextRequest) {
     await db.watchlist.delete({
       where: {
         userId_stockId: {
-          userId: (session.user as { id: string }).id,
+          userId,
           stockId,
         },
       },

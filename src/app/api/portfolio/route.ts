@@ -3,6 +3,15 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+  balance?: number;
+}
+
 // GET - Fetch user's portfolio
 export async function GET(request: NextRequest) {
   try {
@@ -15,8 +24,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userId = (session.user as SessionUser).id;
     const portfolios = await db.portfolio.findMany({
-      where: { userId: (session.user as { id: string }).id },
+      where: { userId },
       include: {
         stock: true,
       },
