@@ -7,8 +7,13 @@ const nextConfig: NextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
+  output: "standalone",
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["*"]
+    }
+  }
   // output: "standalone",
-  // /* config options here */
   // typescript: {
   //   ignoreBuildErrors: true,
   // },
