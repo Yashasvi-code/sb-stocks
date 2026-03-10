@@ -1,7 +1,7 @@
 "use client";
 
 export const dynamic = "force-dynamic";
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -68,7 +68,7 @@ const getSessionUser = (session: { user?: unknown } | null): SessionUser | null 
   return session.user as SessionUser;
 };
 
-export default function Dashboard() {
+function DashboardContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get("tab") || "dashboard";
@@ -705,5 +705,13 @@ if (status === "loading") {
         onSuccess={fetchStocks}
       />
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
