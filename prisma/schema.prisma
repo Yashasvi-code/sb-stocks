@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         String        @default("user") // "user" or "admin"
+  balance      Float         @default(100000.0) // Starting virtual funds: $100,000
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  portfolios   Portfolio[]
+  transactions Transaction[]
+  watchlists   Watchlist[]
+}
+
+model Stock {
+  id          String        @id @default(cuid())
+  symbol      String        @unique
+  name        String
+  price       Float
+  marketCap   Float         @default(0)
+  sector      String        @default("Unknown")
+  description String?
+  change      Float         @default(0) // Percentage change
+  high52Week  Float         @default(0)
+  low52Week   Float         @default(0)
+  volume      Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  portfolios  Portfolio[]
+  transactions Transaction[]
+  watchlists  Watchlist[]
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  stockId   String
+  type      String   // "buy" or "sell"
+  quantity  Int
+  price     Float    // Price at time of transaction
+  total     Float    // Total amount
+  date      DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock     Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+}
+
+model Portfolio {
+  id            String   @id @default(cuid())
+  userId        String
+  stockId       String
+  quantity      Int      @default(0)
+  averagePrice  Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock         Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, stockId]) // One portfolio entry per user per stock
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  stockId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock     Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, stockId]) // One watchlist entry per user per stock
+}
