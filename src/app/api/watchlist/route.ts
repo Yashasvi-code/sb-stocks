@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const watchlist = await db.watchlist.findMany({
-      where: { userId: session.user.id },
+      where: { userId: (session.user as { id: string }).id },
       include: {
         stock: true,
       },
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const existing = await db.watchlist.findUnique({
       where: {
         userId_stockId: {
-          userId: session.user.id,
+          userId: (session.user as { id: string }).id,
           stockId,
         },
       },
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     const watchlistEntry = await db.watchlist.create({
       data: {
-        userId: session.user.id,
+        userId: (session.user as { id: string }).id,
         stockId,
       },
       include: { stock: true },
@@ -127,7 +127,7 @@ export async function DELETE(request: NextRequest) {
     await db.watchlist.delete({
       where: {
         userId_stockId: {
-          userId: session.user.id,
+          userId: (session.user as { id: string }).id,
           stockId,
         },
       },

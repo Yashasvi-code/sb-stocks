@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+// src/types/next-auth.d.ts
 import { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
@@ -8,12 +8,6 @@ declare module "next-auth" {
       role: string;
       balance: number;
     } & DefaultSession["user"];
-  }
-
-  interface User {
-    id: string;
-    role: string;
-    balance: number;
   }
 }
 

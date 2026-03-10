@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
 
     const transactions = await db.transaction.findMany({
-      where: { userId: session.user.id },
+      where: { userId: (session.user as { id: string }).id },
       include: {
         stock: true,
       },

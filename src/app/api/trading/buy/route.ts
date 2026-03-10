@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Get user
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: (session.user as { id: string }).id },
     });
 
     if (!user) {

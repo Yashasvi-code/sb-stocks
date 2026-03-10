@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const portfolios = await db.portfolio.findMany({
-      where: { userId: session.user.id },
+      where: { userId: (session.user as { id: string }).id },
       include: {
         stock: true,
       },
